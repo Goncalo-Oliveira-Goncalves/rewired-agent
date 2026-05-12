@@ -343,6 +343,14 @@ def build_session_context_prompt(
             "  The Agent (agent-agent) → <@U0B3SADDZAL>\n"
             "Example: <@U0B2USNT6E9> can you review this?"
         )
+        lines.append("")
+        lines.append(
+            "**Bot-to-bot loop prevention:** If the message was sent by another agent (bot),"
+            " ONLY respond if your own <@USERID> is explicitly mentioned in the message."
+            " Your ID is in the swarm colleagues list above — match it to your agent name."
+            " If a bot message does not mention you, use [SILENT] to avoid infinite loops."
+            " If a human sent the message, respond normally regardless of mentions."
+        )
     elif context.source.platform == Platform.DISCORD:
         # Inject the Discord IDs block only when the agent actually has
         # Discord tools loaded this session — i.e. the user opted into
