@@ -1264,6 +1264,7 @@ class BasePlatformAdapter(ABC):
         self.config = config
         self.platform = platform
         self._message_handler: Optional[MessageHandler] = None
+        self._adapters_registry: Optional[Dict[str, 'BasePlatformAdapter']] = None
         self._running = False
         self._fatal_error_code: Optional[str] = None
         self._fatal_error_message: Optional[str] = None
@@ -1452,6 +1453,10 @@ class BasePlatformAdapter(ABC):
         an optional response string.
         """
         self._message_handler = handler
+
+    def set_adapters_registry(self, registry: Dict[str, 'BasePlatformAdapter']) -> None:
+        """Set the cross-platform adapters registry for routing."""
+        self._adapters_registry = registry
 
     def set_busy_session_handler(self, handler: Optional[Callable[[MessageEvent, str], Awaitable[bool]]]) -> None:
         """Set an optional handler for messages arriving during active sessions."""
@@ -2372,27 +2377,12 @@ class BasePlatformAdapter(ABC):
             else:
                 # All retries exhausted (loop completed without break) — notify user
                 logger.error("[%s] Failed to deliver response after %d retries: %s", self.name, max_retries, error_str)
-                notice = (
-                    "\u26a0\ufe0f Message delivery failed after multiple attempts. "
-                    "Please try again \u2014 your request was processed but the response could not be sent."
-                )
-                try:
-                    await self.send(chat_id=chat_id, content=notice, reply_to=reply_to, metadata=metadata)
-                except Exception as notify_err:
-                    logger.debug("[%s] Could not send delivery-failure notice: %s", self.name, notify_err)
+                # PATCHED: chat notice suppressed -- log-only to avoid agent-to-agent cascade spam.
                 return result
 
-        # Non-network / post-retry formatting failure: try plain text as fallback
-        logger.warning("[%s] Send failed: %s — trying plain-text fallback", self.name, error_str)
-        fallback_result = await self.send(
-            chat_id=chat_id,
-            content=f"(Response formatting failed, plain text:)\n\n{content[:3500]}",
-            reply_to=reply_to,
-            metadata=metadata,
-        )
-        if not fallback_result.success:
-            logger.error("[%s] Fallback send also failed: %s", self.name, fallback_result.error)
-        return fallback_result
+        # PATCHED: format-fallback chat-post disabled -- log-only.
+        logger.warning("[%s] Send failed: %s -- chat fallback suppressed", self.name, error_str)
+        return result
 
     @staticmethod
     def _merge_caption(existing_text: Optional[str], new_text: str) -> str:
@@ -2860,6 +2850,46 @@ class BasePlatformAdapter(ABC):
             # string, and remember the TTL + platform capability so the
             # post-send block can schedule the deletion.
             response, _ephemeral_ttl = self._unwrap_ephemeral(response)
+
+            # ── Route via syntax markers ───────────────────────────────────
+            # If the response starts with [SLACK], [TELEGRAM], or [SILENT],
+            # route to the specified platform's home channel instead of the
+            # origin. No marker = silent work (don't send anything).
+            if response:
+                from gateway.routing import parse_routing
+                routing_target, routed_text = parse_routing(response)
+                if routing_target is not None:
+                    target_adapter = (
+                        self._adapters_registry.get(routing_target)
+                        if self._adapters_registry else None
+                    )
+                    if target_adapter and target_adapter.config.home_channel:
+                        home = target_adapter.config.home_channel
+                        try:
+                            await target_adapter.send(
+                                chat_id=home.chat_id,
+                                content=routed_text or "...",
+                                metadata=_thread_metadata,
+                            )
+                            logger.info(
+                                "[%s] Routed response to %s via [%s] marker (chat: %s)",
+                                self.name, routing_target, routing_target.upper(), home.chat_id,
+                            )
+                        except Exception as route_err:
+                            logger.error(
+                                "[%s] Failed to route to %s: %s",
+                                self.name, routing_target, route_err,
+                            )
+                    else:
+                        logger.warning(
+                            "[%s] Cannot route to %s: %s",
+                            self.name, routing_target,
+                            "no adapter" if not target_adapter else "no home_channel configured",
+                        )
+                    response = None  # Suppress origin delivery
+                # else: routing_target is None → silent work, suppress origin too
+                else:
+                    response = None
 
             # Send response if any.  A None/empty response is normal when
             # streaming already delivered the text (already_sent=True) or

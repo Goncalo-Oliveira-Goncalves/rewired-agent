@@ -3521,6 +3521,15 @@ class GatewayRunner:
                     "next_retry": time.monotonic() + 30,
                 }
         
+        # Wire up cross-platform routing registry — each adapter gets a
+        # reference to its siblings so the routing system can forward
+        # responses to the right platform's home channel.
+        for _plat, _adapter in self.adapters.items():
+            try:
+                _adapter.set_adapters_registry(self.adapters)
+            except Exception as _reg_err:
+                logger.debug("Failed to wire routing registry for %s: %s", _plat, _reg_err)
+        
         if connected_count == 0:
             if startup_nonretryable_errors:
                 reason = "; ".join(startup_nonretryable_errors)
@@ -9713,6 +9722,11 @@ class GatewayRunner:
                     fallback_model=self._fallback_model,
                 )
                 try:
+                    # Per-profile stagger: agents respond 0.23s apart so Slack doesn't flood
+                    _stagger_s = float(os.environ.get("HERMES_RESPONSE_DELAY_SECONDS", "0"))
+                    if _stagger_s > 0:
+                        import time as _time_mod
+                        _time_mod.sleep(_stagger_s)
                     return agent.run_conversation(
                         user_message=prompt,
                         task_id=task_id,
@@ -14214,8 +14228,9 @@ class GatewayRunner:
                     model, runtime_kwargs.get("provider"), session_key or "",
                 )
             except Exception as exc:
+                logger.warning("Provider authentication failed (silent to chat): %s", exc)
                 return {
-                    "final_response": f"⚠️ Provider authentication failed: {exc}",
+                    "final_response": "",  # PATCHED: empty -> no chat post
                     "messages": [],
                     "api_calls": 0,
                     "tools": [],
