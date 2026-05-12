@@ -318,12 +318,17 @@ def build_session_context_prompt(
     if context.source.platform == Platform.SLACK:
         lines.append("")
         lines.append(
+            "**Routing protocol (REQUIRED):** You MUST start your response with "
+            "`[SLACK]` on its own line to deliver your message to this channel. "
+            "Responses without this marker are silently discarded — the user sees nothing. "
+            "Use `[SILENT]` only when you intentionally want to work without replying.\n"
+            "Example:\n"
+            "  [SLACK]\n"
+            "  Your message here...\n\n"
             "**Platform notes:** You are running inside Slack. "
-            "You do NOT have access to Slack-specific APIs — you cannot search "
-            "channel history, pin/unpin messages, manage channels, or list users. "
-            "Do not promise to perform these actions. The gateway may inline the "
-            "current message's Slack block/attachment payload when available, but "
-            "you still cannot call Slack APIs yourself."
+            "You can search channel history and list users via Slack tools if available. "
+            "You cannot pin/unpin messages or manage channels (unless you are a moderator agent). "
+            "The gateway may inline the current message's Slack block/attachment payload when available."
         )
     elif context.source.platform == Platform.DISCORD:
         # Inject the Discord IDs block only when the agent actually has

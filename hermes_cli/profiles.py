@@ -218,7 +218,7 @@ def _get_profiles_root() -> Path:
     ``~/.hermes``, profiles live under ``HERMES_HOME/profiles/`` so
     they persist on the mounted volume.
     """
-    return _get_default_hermes_home() / "profiles"
+    return _get_default_hermes_home() / "agents"
 
 
 def _get_default_hermes_home() -> Path:
