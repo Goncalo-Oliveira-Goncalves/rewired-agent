@@ -327,33 +327,20 @@ def build_session_context_prompt(
             "  Your message here...\n\n"
             "**Platform notes:** You are running inside Slack as part of the **Re:WIRED agent swarm**. "
             "You can search channel history and list users via Slack tools if available. "
-            "You cannot pin/unpin messages or manage channels (unless you are a moderator agent). "
-            "The gateway may inline the current message's Slack block/attachment payload when available.
-
-"
-            "**Your swarm colleagues** — include their ID in your [SLACK] response to notify them:
-"
-            "  agent-adaptive-coordinator → <@U0B2VTYMY2J>
-"
-            "  agent-agent → <@U0B3SADDZAL>
-"
-            "  agent-agentic-payments → <@U0B2Y0X04LS>
-"
-            "  agent-analyze-code-quality → <@U0B2XUXV50A>
-"
-            "  agent-app-store → <@U0B2UJU2ZRB>
-"
-            "  agent-arch-system-design → <@U0B2USNT6E9>
-"
-            "  agent-architecture → <@U0B2W759BQW>
-"
-            "  agent-authentication → <@U0B2GRB65HD>
-"
-            "  agent-automation-smart-agent → <@U0B2RU0UMHR>
-"
-            "  agent-base-template-generator → <@U0B3SJY1P08>
-"
-            "  agent-benchmark-suite → <@U0B3SK8RW1W>"
+            "You cannot pin/unpin messages or manage channels. "
+            "Inline Slack block payload may be available.\n\n"
+            "**Swarm colleagues** (use ID to mention):\n"
+            "  agent-adaptive-coordinator <@U0B2VTYMY2J>\n"
+            "  agent-agent <@U0B3SADDZAL>\n"
+            "  agent-agentic-payments <@U0B2Y0X04LS>\n"
+            "  agent-analyze-code-quality <@U0B2XUXV50A>\n"
+            "  agent-app-store <@U0B2UJU2ZRB>\n"
+            "  agent-arch-system-design <@U0B2USNT6E9>\n"
+            "  agent-architecture <@U0B2W759BQW>\n"
+            "  agent-authentication <@U0B2GRB65HD>\n"
+            "  agent-automation-smart-agent <@U0B2RU0UMHR>\n"
+            "  agent-base-template-generator <@U0B3SJY1P08>\n"
+            "  agent-benchmark-suite <@U0B3SK8RW1W>"
         )
     elif context.source.platform == Platform.DISCORD:
         # Inject the Discord IDs block only when the agent actually has
