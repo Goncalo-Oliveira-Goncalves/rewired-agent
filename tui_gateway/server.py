@@ -5981,9 +5981,10 @@ connect();
         host_ip = _get_host_ip()
         return _ok(rid, {
             "status": "started",
-            "url": f"http://{host_ip}:{port}",
-            "host_port": f"{host_ip}:{port}",
+            "host_ip": host_ip,
             "port": port,
+            "host_port": f"{host_ip}:{port}",
+            "url": f"http://{host_ip}:{port}",
         })
     except ImportError as e:
         return _err(rid, 5027, f"aiohttp not available: {e}")

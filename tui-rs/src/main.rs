@@ -644,12 +644,25 @@ fn process_gateway_msg(app: &mut App, msg: GatewayMsg) {
                     }
                 }
                 "voice.remote" => {
-                    if let Some(url) = data.get("url").and_then(|v| v.as_str()) {
-                        let host_port = data.get("host_port").and_then(|v| v.as_str()).unwrap_or(url);
-                        app.voice_url = Some(url.to_string());
+                    if let Some(port) = data.get("port").and_then(|v| v.as_u64()) {
+                        let host_ip = data.get("host_ip").and_then(|v| v.as_str()).unwrap_or("<server-ip>");
                         app.messages.push(ChatMessage {
                             role: "system".into(),
-                            text: format!("🌐 Remote voice relay started!\n\nRun on your local machine:\n  rewired-voice-client {}", host_port),
+                            text: format!(
+"🌐 Remote voice relay started on port {}!
+
+To use it, reconnect SSH with port forwarding, then run the client:
+
+  1. Exit this SSH session (Ctrl+D)
+  2. Reconnect with:
+
+     ssh -L {}:127.0.0.1:{} user@{} ...
+
+  3. On your local machine, run:
+
+     rewired-voice-client localhost:{}",
+                                port, port, port, host_ip, port
+                            ),
                         });
                         app.status = "Remote voice ready".into();
                     } else if let Some(err) = data.get("error").and_then(|v| v.as_str()) {
