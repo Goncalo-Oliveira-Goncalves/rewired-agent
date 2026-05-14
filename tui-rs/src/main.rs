@@ -649,7 +649,7 @@ fn process_gateway_msg(app: &mut App, msg: GatewayMsg) {
                         app.voice_url = Some(url.to_string());
                         app.messages.push(ChatMessage {
                             role: "system".into(),
-                            text: format!("🌐 Remote voice relay started!\n\nRun on your local machine:\n  rewired-voice-client {}\n\nOr open in a browser:\n  {}", host_port, url),
+                            text: format!("🌐 Remote voice relay started!\n\nRun on your local machine:\n  rewired-voice-client {}", host_port),
                         });
                         app.status = "Remote voice ready".into();
                     } else if let Some(err) = data.get("error").and_then(|v| v.as_str()) {
