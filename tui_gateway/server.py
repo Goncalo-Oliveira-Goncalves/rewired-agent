@@ -5943,6 +5943,7 @@ connect();
             data = await request.read()
             if not data:
                 return web.Response(text="", status=400)
+            _voice_emit("voice.status", {"state": "audio received, transcribing..."})
             try:
                 with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as f:
                     f.write(data)
@@ -5952,13 +5953,16 @@ connect();
                 os.unlink(tmp_path)
                 text = (result or {}).get("transcript", "").strip()
                 if text:
+                    _voice_emit("voice.status", {"state": "transcribed"})
                     _voice_emit("voice.transcript", {"text": text})
                     return web.Response(text=text, content_type="text/plain")
                 else:
+                    _voice_emit("voice.status", {"state": "no speech detected"})
                     _voice_emit("voice.transcript", {"no_speech_limit": True})
                     return web.Response(text="", status=204)
             except Exception as e:
                 logger.error("transcribe failed: %s", e)
+                _voice_emit("voice.status", {"state": "transcription failed"})
                 return web.Response(text=str(e), status=500)
 
         app = web.Application()
