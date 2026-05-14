@@ -581,6 +581,31 @@ PLATFORM_HINTS = {
     ),
 }
 
+# ── Cross-platform routing syntax ───────────────────────────────────────────
+# Tells AI agents they can route responses to specific platforms or stay silent.
+ROUTING_GUIDANCE = (
+    "You have cross-platform routing control. Prefix your response with one "
+    "of these syntax markers to choose where it goes:\n"
+    "\n"
+    "  [SLACK]     → route this response to Slack\n"
+    "  [TELEGRAM]  → route this response to Telegram\n"
+    "  [SILENT]    → work silently (no message sent anywhere)\n"
+    "\n"
+    "Default (no marker) = silent work — nothing is sent to any chat.\n"
+    "The marker must be the very first thing in your response (line 1). "
+    "Everything after it is the message body.\n"
+    "\n"
+    "Examples:\n"
+    "  [SLACK] The deployment finished successfully.\n"
+    "  [TELEGRAM] Critical alert: CPU at 95%.\n"
+    "  [SILENT]\n"
+    "\n"
+    "Use this to decide per-response whether to speak and where. "
+    "If the user is on Slack and you have an urgent notification, "
+    "route it to Telegram instead. If you're just doing background "
+    "work, use [SILENT] or no marker."
+)
+
 # ---------------------------------------------------------------------------
 # Environment hints — execution-environment awareness for the agent.
 # Unlike PLATFORM_HINTS (which describe the messaging channel), these describe

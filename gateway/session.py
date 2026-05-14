@@ -318,12 +318,38 @@ def build_session_context_prompt(
     if context.source.platform == Platform.SLACK:
         lines.append("")
         lines.append(
-            "**Platform notes:** You are running inside Slack. "
-            "You do NOT have access to Slack-specific APIs — you cannot search "
-            "channel history, pin/unpin messages, manage channels, or list users. "
-            "Do not promise to perform these actions. The gateway may inline the "
-            "current message's Slack block/attachment payload when available, but "
-            "you still cannot call Slack APIs yourself."
+            "**Routing protocol (REQUIRED):** You MUST start your response with "
+            "`[SLACK]` on its own line to deliver your message to this channel. "
+            "Responses without this marker are silently discarded — the user sees nothing. "
+            "Use `[SILENT]` only when you intentionally want to work without replying.\n"
+            "Example:\n"
+            "  [SLACK]\n"
+            "  Your message here...\n\n"
+            "**Platform notes:** You are running inside Slack as part of the **Re:WIRED agent swarm**. "
+            "You can search channel history and list users via Slack tools if available. "
+            "You cannot pin/unpin messages or manage channels. "
+            "Inline Slack block payload may be available.\n\n"
+            "**Swarm colleagues** — to mention someone you MUST use <@USERID> format exactly:\n"
+            "  System Architect (agent-arch-system-design) → <@U0B2USNT6E9>\n"
+            "  Adaptive Coordinator (agent-adaptive-coordinator) → <@U0B2VTYMY2J>\n"
+            "  Architecture Specialist (agent-architecture) → <@U0B2W759BQW>\n"
+            "  Smart Automation (agent-automation-smart-agent) → <@U0B2RU0UMHR>\n"
+            "  Code Quality Analyzer (agent-analyze-code-quality) → <@U0B2XUXV50A>\n"
+            "  Auth Specialist (agent-authentication) → <@U0B2GRB65HD>\n"
+            "  App Store Agent (agent-app-store) → <@U0B2UJU2ZRB>\n"
+            "  Agentic Payments (agent-agentic-payments) → <@U0B2Y0X04LS>\n"
+            "  Template Generator (agent-base-template-generator) → <@U0B3SJY1P08>\n"
+            "  Benchmark Suite (agent-benchmark-suite) → <@U0B3SK8RW1W>\n"
+            "  The Agent (agent-agent) → <@U0B3SADDZAL>\n"
+            "Example: <@U0B2USNT6E9> can you review this?"
+        )
+        lines.append("")
+        lines.append(
+            "**Bot-to-bot loop prevention:** If the message was sent by another agent (bot),"
+            " ONLY respond if your own <@USERID> is explicitly mentioned in the message."
+            " Your ID is in the swarm colleagues list above — match it to your agent name."
+            " If a bot message does not mention you, use [SILENT] to avoid infinite loops."
+            " If a human sent the message, respond normally regardless of mentions."
         )
     elif context.source.platform == Platform.DISCORD:
         # Inject the Discord IDs block only when the agent actually has

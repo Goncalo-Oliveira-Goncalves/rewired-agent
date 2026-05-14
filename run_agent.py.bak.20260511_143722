@@ -143,7 +143,7 @@ from agent.think_scrubber import StreamingThinkScrubber
 from agent.retry_utils import jittered_backoff
 from agent.error_classifier import classify_api_error, FailoverReason
 from agent.prompt_builder import (
-    DEFAULT_AGENT_IDENTITY, PLATFORM_HINTS, ROUTING_GUIDANCE,
+    DEFAULT_AGENT_IDENTITY, PLATFORM_HINTS,
     MEMORY_GUIDANCE, SESSION_SEARCH_GUIDANCE, SKILLS_GUIDANCE,
     HERMES_AGENT_HELP_GUIDANCE,
     KANBAN_GUIDANCE,
@@ -3263,11 +3263,11 @@ class AIAgent:
         warning.
         """
         msg = getattr(self, "_compression_warning", None)
-        if msg:
+        if msg and self.status_callback:
             try:
-                self._vprint(f"{self.log_prefix}{msg}", force=True)
+                self.status_callback("lifecycle", msg)
             except Exception:
-                pass  # PATCHED: log-only, no chat post
+                pass
 
     def _is_direct_openai_url(self, base_url: str = None) -> bool:
         """Return True when a base URL targets OpenAI's native API."""
@@ -5795,10 +5795,6 @@ class AIAgent:
                     prompt_parts.append(_entry.platform_hint)
             except Exception:
                 pass
-
-        # Cross-platform routing guidance — only for chat gateway platforms
-        if platform_key and platform_key not in ("cli", "cron", "sms", "api_server"):
-            prompt_parts.append(ROUTING_GUIDANCE)
 
         return "\n\n".join(p.strip() for p in prompt_parts if p.strip())
 

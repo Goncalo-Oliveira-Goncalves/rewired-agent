@@ -1,0 +1,10 @@
+[package]
+name = "rewired-voice-client"
+version = "0.1.0"
+edition = "2024"
+description = "Stream local microphone to a remote Rewired server for transcription."
+
+[dependencies]
+cpal = "0.15"
+hound = "3.5"
+clap = { version = "4", features = ["derive"] }

@@ -3521,15 +3521,6 @@ class GatewayRunner:
                     "next_retry": time.monotonic() + 30,
                 }
         
-        # Wire up cross-platform routing registry — each adapter gets a
-        # reference to its siblings so the routing system can forward
-        # responses to the right platform's home channel.
-        for _plat, _adapter in self.adapters.items():
-            try:
-                _adapter.set_adapters_registry(self.adapters)
-            except Exception as _reg_err:
-                logger.debug("Failed to wire routing registry for %s: %s", _plat, _reg_err)
-        
         if connected_count == 0:
             if startup_nonretryable_errors:
                 reason = "; ".join(startup_nonretryable_errors)
@@ -14228,9 +14219,8 @@ class GatewayRunner:
                     model, runtime_kwargs.get("provider"), session_key or "",
                 )
             except Exception as exc:
-                logger.warning("Provider authentication failed (silent to chat): %s", exc)
                 return {
-                    "final_response": "",  # PATCHED: empty -> no chat post
+                    "final_response": f"⚠️ Provider authentication failed: {exc}",
                     "messages": [],
                     "api_calls": 0,
                     "tools": [],

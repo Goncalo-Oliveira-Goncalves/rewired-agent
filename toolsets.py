@@ -67,6 +67,9 @@ _HERMES_CORE_TOOLS = [
     "kanban_comment", "kanban_create", "kanban_link",
     # Computer use (macOS, gated on cua-driver being installed via check_fn)
     "computer_use",
+    # Hive swarm management (gated on ~/.rewired/agents/ existing via check_fn)
+    "hive_spawn_agent", "hive_remove_agent", "hive_room",
+    "hive_set_task_status", "hive_write_status",
 ]
 
 
@@ -516,6 +519,12 @@ TOOLSETS = {
         "description": "Gateway toolset - union of all messaging platform tools",
         "tools": [],
         "includes": ["hermes-telegram", "hermes-discord", "hermes-whatsapp", "hermes-slack", "hermes-signal", "hermes-bluebubbles", "hermes-homeassistant", "hermes-email", "hermes-sms", "hermes-mattermost", "hermes-matrix", "hermes-dingtalk", "hermes-feishu", "hermes-wecom", "hermes-wecom-callback", "hermes-weixin", "hermes-qqbot", "hermes-webhook", "hermes-yuanbao"]
+    },
+
+    "hive": {
+        "description": "Hive swarm management — spawn agents, communication rooms, task status",
+        "tools": ["hive_spawn_agent", "hive_remove_agent", "hive_room", "hive_set_task_status", "hive_write_status"],
+        "includes": []
     }
 }
 

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>rewired-voice-client</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  background: #0d0d14; color: #e0e0e0;
+  display: flex; flex-direction: column; align-items: center;
+  min-height: 100vh; line-height: 1.6;
+}
+.container { max-width: 720px; width: 100%; padding: 48px 24px; }
+h1 { font-size: 28px; font-weight: 700; color: #fff; margin-bottom: 8px; }
+h1 span { color: #58a6ff; }
+.subtitle { color: #888; font-size: 16px; margin-bottom: 32px; }
+h2 { font-size: 18px; color: #fff; margin: 32px 0 12px; }
+p, li { color: #bbb; font-size: 15px; }
+code {
+  background: #1a1a28; color: #e0e0e0; padding: 2px 8px;
+  border-radius: 4px; font-size: 14px;
+}
+pre {
+  background: #1a1a28; padding: 16px; border-radius: 8px;
+  overflow-x: auto; margin: 12px 0; font-size: 14px;
+  border: 1px solid #2a2a3a;
+}
+.downloads { display: flex; gap: 12px; flex-wrap: wrap; margin: 24px 0; }
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 12px 24px; border-radius: 8px; text-decoration: none;
+  font-size: 15px; font-weight: 600; transition: all 0.2s;
+  border: 1px solid #333;
+}
+.btn-linux { background: #1a1a28; color: #e0e0e0; }
+.btn-linux:hover { background: #2a2a3a; border-color: #58a6ff; }
+.btn-macos { background: #1a1a28; color: #e0e0e0; }
+.btn-macos:hover { background: #2a2a3a; border-color: #ff6b6b; }
+.btn-win { background: #1a1a28; color: #e0e0e0; }
+.btn-win:hover { background: #2a2a3a; border-color: #4ecdc4; }
+.source-link {
+  display: inline-block; margin-top: 8px; color: #58a6ff;
+  text-decoration: none; font-size: 14px;
+}
+.source-link:hover { text-decoration: underline; }
+.howto { margin: 24px 0; }
+.howto ol { padding-left: 20px; }
+.howto li { margin-bottom: 8px; }
+.arch-note { color: #666; font-size: 13px; margin-top: 16px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1><span>rewired</span>-voice-client</h1>
+  <p class="subtitle">Stream your local microphone to a remote Rewired agent — no browser needed.</p>
+
+  <h2>Download</h2>
+  <p>Pre-built binaries aren't ready yet. For now, build from source with one command:</p>
+  <pre>curl -sSfL https://rewired-agent.vercel.app/install.sh | bash</pre>
+  <p class="arch-note">This requires Rust (install via <a class="source-link" href="https://rustup.rs">rustup.rs</a>). The script clones, builds, and copies the binary to <code>~/.local/bin/</code>.</p>
+
+  <div class="downloads">
+    <a class="btn btn-linux" href="/install.sh">🐧 Linux &rarr; install script</a>
+    <a class="btn btn-macos" href="/install.sh">🍎 macOS &rarr; install script</a>
+    <a class="btn btn-win" href="/install.sh">🪟 Windows &rarr; install script</a>
+  </div>
+  <p class="arch-note">Once published, pre-built binaries will be on <a class="source-link" href="https://github.com/Goncalo-Oliveira-Goncalves/rewired-agent/releases">GitHub Releases</a>.</p>
+
+  <h3>Manual build</h3>
+  <pre>git clone https://github.com/Goncalo-Oliveira-Goncalves/rewired-agent
+cd rewired-agent
+cargo build --release -p rewired-voice-client
+cp target/release/rewired-voice-client ~/.local/bin/</pre>
+
+  <h2>Install</h2>
+  <pre># Download and make executable
+mv ~/Downloads/rewired-voice-client* ~/.local/bin/rewired-voice-client
+chmod +x ~/.local/bin/rewired-voice-client
+
+# Or build from source
+git clone https://github.com/anomalyco/rewired
+cd rewired/voice-client
+cargo build --release
+cp target/release/rewired-voice-client ~/.local/bin/</pre>
+
+  <h2>Usage</h2>
+  <p>In the Rewired TUI, type <code>/voice</code>. If no microphone is detected on the server, a relay starts and shows a connection address. On your local machine:</p>
+
+  <pre>rewired-voice-client &lt;server&gt;:&lt;port&gt;</pre>
+
+  <p>For example:</p>
+  <pre>rewired-voice-client 192.168.1.50:43871</pre>
+
+  <div class="howto">
+    <ol>
+      <li>Run the command on your <strong>local machine</strong> (the one with a microphone).</li>
+      <li>Press <strong>Enter</strong> to start recording.</li>
+      <li>Press <strong>Enter</strong> again to stop and transcribe.</li>
+      <li>The transcribed text appears in the Rewired TUI and is automatically submitted.</li>
+    </ol>
+  </div>
+
+  <h2>How it works</h2>
+  <p>The binary captures audio from your default microphone using <a href="https://github.com/RustAudio/cpal" style="color:#58a6ff">cpal</a>, encodes it as a WAV file, and sends it to the Rewired server via HTTP POST. The server transcribes it using the configured STT provider (Whisper, Groq, OpenAI, etc.) and delivers the text back into the TUI chat.</p>
+
+  <h2>Requirements</h2>
+  <p>Any modern Linux, macOS, or Windows system with a microphone. No runtime dependencies — the binary is statically linked.</p>
+
+  <h2>Build from source</h2>
+  <pre>git clone https://github.com/anomalyco/rewired
+cd rewired/voice-client
+cargo build --release
+
+# Optional: cross-compile for other targets
+cargo install cross
+cross build --release --target aarch64-apple-darwin
+cross build --release --target x86_64-pc-windows-gnu</pre>
+
+  <h2>Source</h2>
+  <p><a class="source-link" href="https://github.com/anomalyco/rewired/tree/main/voice-client">github.com/anomalyco/rewired/tree/main/voice-client</a></p>
+</div>
+</body>
+</html>

@@ -565,22 +565,6 @@ class SlackAdapter(BasePlatformAdapter):
                 if self._bot_user_id is None:
                     self._bot_user_id = bot_user_id
 
-                # PATCHED PHASE 1: cache identity for strict tag-gate matching
-                if not getattr(self, "_bot_username", None):
-                    self._bot_username = bot_name
-                if not getattr(self, "_bot_display_name", None):
-                    try:
-                        _info = await client.users_info(user=bot_user_id)
-                        if _info.get("ok"):
-                            _prof = _info.get("user", {}).get("profile", {})
-                            self._bot_display_name = (
-                                _prof.get("display_name")
-                                or _prof.get("real_name")
-                                or _info["user"].get("name")
-                            )
-                    except Exception as _e:
-                        logger.debug("[Slack] users.info display_name fetch failed: %s", _e)
-
                 logger.info(
                     "[Slack] Authenticated as @%s in workspace %s (team: %s)",
                     bot_name, team_name, team_id,
@@ -725,36 +709,6 @@ class SlackAdapter(BasePlatformAdapter):
         """Send a message to a Slack channel or DM."""
         if not self._app:
             return SendResult(success=False, error="Not connected")
-
-        # PATCHED: gag all status/error/log noise. Block by prefix or substring match.
-        try:
-            _text = (content or "").lstrip()
-            _BLOCK_PREFIXES = (
-                "⚠️", "⚠", "⏳", "⏩", "⚡",
-                "❌", "✅", "ℹ️", "ℹ",
-                ":warning:", ":hourglass", ":fast_forward:", ":zap:", ":x:",
-                "(Response formatting failed",
-            )
-            _BLOCK_SUBSTRINGS = (
-                "Error code:",
-                "Queued for the next turn",
-                "Steered into current run",
-                "Interrupting current task",
-                "Provider authentication failed",
-                "Non-retryable error",
-                "Authentication error",
-                "Response formatting failed",
-                "Message delivery failed",
-                "Unknown provider",
-                "trying fallback",
-                "'detail': 'Unauthorized'",
-                "Compression",
-            )
-            if _text.startswith(_BLOCK_PREFIXES) or any(s in _text for s in _BLOCK_SUBSTRINGS):
-                logger.warning("[Slack] suppressed noise msg: %s", _text[:160])
-                return SendResult(success=True, message_id=None, error=None)
-        except Exception:
-            pass
 
         try:
             # Check for a pending slash-command context.  When the user ran a
@@ -1768,13 +1722,11 @@ class SlackAdapter(BasePlatformAdapter):
         except (ValueError, TypeError):
             pass
 
-        # PATCHED: HARD-IGNORE all bot messages for turn-firing. Bots may post freely
-        # to slack (cross-agent chat) but NEVER auto-trigger another agent. Only USER
-        # @tag or /steer fires a turn. allow_bots config is bypassed.
+        # Bot message filtering (SLACK_ALLOW_BOTS / config allow_bots):
+        #   "none"     — ignore all bot messages (default, backward-compatible)
+        #   "mentions" — accept bot messages only when they @mention us
+        #   "all"      — accept all bot messages (except our own)
         if event.get("bot_id") or event.get("subtype") == "bot_message":
-            return
-        # (legacy allow_bots logic kept below but unreachable due to early return above)
-        if False and (event.get("bot_id") or event.get("subtype") == "bot_message"):
             allow_bots = self.config.extra.get("allow_bots", "")
             if not allow_bots:
                 allow_bots = os.getenv("SLACK_ALLOW_BOTS", "none")
@@ -1941,32 +1893,37 @@ class SlackAdapter(BasePlatformAdapter):
         event_thread_ts = event.get("thread_ts")
         is_thread_reply = bool(event_thread_ts and event_thread_ts != ts)
 
-        # PATCHED PHASE 1: strict tag-gate.
-        # Agent only fires turn when explicitly tagged. Channel auto-fires (sticky
-        # threads / active sessions) are DISABLED. Tag = Slack <@bot_uid> mention,
-        # OR bot_display_name/username appearing as a word in the text. DMs still
-        # auto-fire (1-on-1 with this specific bot app = implicit tag).
         if not is_dm and bot_uid:
+            # Check allowed channels — if set, only respond in these channels (whitelist)
             allowed_channels = self._slack_allowed_channels()
             if allowed_channels and channel_id not in allowed_channels:
                 logger.debug("[Slack] Ignoring message in non-allowed channel: %s", channel_id)
                 return
-            _tag_names = []
-            for _n in (
-                getattr(self, "_bot_display_name", None),
-                getattr(self, "_bot_username", None),
-            ):
-                if _n:
-                    _tag_names.append(_n.lower())
-            _text_lower = routing_text.lower()
-            _is_name_tagged = any(
-                re.search(r"" + re.escape(_n) + r"", _text_lower)
-                for _n in _tag_names
-            )
-            is_mentioned = is_mentioned or _is_name_tagged
-            if not is_mentioned:
-                logger.debug("[Slack] non-tag channel msg dropped (strict tag-gate Phase 1)")
-                return
+
+            if channel_id in self._slack_free_response_channels():
+                pass  # Free-response channel — always process
+            elif not self._slack_require_mention():
+                pass  # Mention requirement disabled globally for Slack
+            elif self._slack_strict_mention() and not is_mentioned:
+                return  # Strict mode: ignore until @-mentioned again
+            elif not is_mentioned:
+                reply_to_bot_thread = (
+                    is_thread_reply and event_thread_ts in self._bot_message_ts
+                )
+                in_mentioned_thread = (
+                    event_thread_ts is not None
+                    and event_thread_ts in self._mentioned_threads
+                )
+                has_session = (
+                    is_thread_reply
+                    and self._has_active_session_for_thread(
+                        channel_id=channel_id,
+                        thread_ts=event_thread_ts,
+                        user_id=user_id,
+                    )
+                )
+                if not reply_to_bot_thread and not in_mentioned_thread and not has_session:
+                    return
 
         if is_mentioned:
             # Strip the bot mention from the text

@@ -100,7 +100,7 @@ def get_default_hermes_root() -> Path:
     # Check if this is a profile path: <root>/profiles/<name>
     # If the immediate parent dir is named "profiles", the root is
     # the grandparent — this covers Docker profiles correctly.
-    if env_path.parent.name == "profiles":
+    if env_path.parent.name in ("profiles", "agents"):
         return env_path.parent.parent
 
     # Not a profile path — HERMES_HOME itself is the root
