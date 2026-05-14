@@ -57,15 +57,23 @@ pre {
   <p class="subtitle">Stream your local microphone to a remote Rewired agent — no browser needed.</p>
 
   <h2>Download</h2>
-  <p>Pre-built binaries aren't ready yet. For now, build from source with one command:</p>
-  <pre>curl -sSfL https://rewired-agent.vercel.app/install.sh | bash</pre>
-  <p class="arch-note">This requires Rust (install via <a class="source-link" href="https://rustup.rs">rustup.rs</a>). The script clones, builds, and copies the binary to <code>~/.local/bin/</code>.</p>
+  <p>Pre-built binaries aren't ready yet. For now, build from source:</p>
 
   <div class="downloads">
-    <a class="btn btn-linux" href="/install.sh">🐧 Linux &rarr; install script</a>
-    <a class="btn btn-macos" href="/install.sh">🍎 macOS &rarr; install script</a>
-    <a class="btn btn-win" href="/install.sh">🪟 Windows &rarr; install script</a>
+    <a class="btn btn-linux" href="/install.sh">🐧 Linux &rarr; install.sh</a>
+    <a class="btn btn-macos" href="/install.sh">🍎 macOS &rarr; install.sh</a>
+    <a class="btn btn-win" href="https://rustup.rs">🪟 Windows (get Rust + build)</a>
   </div>
+
+  <p>Linux / macOS — run in terminal:</p>
+  <pre>curl -sSfL https://rewired-agent.vercel.app/install.sh | bash</pre>
+  <p>Windows — run in PowerShell (as admin):</p>
+  <pre>git clone https://github.com/Goncalo-Oliveira-Goncalves/rewired-agent
+cd rewired-agent\voice-client
+cargo build --release
+mkdir $env:USERPROFILE\.local\bin -Force
+copy target\release\rewired-voice-client.exe $env:USERPROFILE\.local\bin\</pre>
+  <p class="arch-note">Requires Rust (<a class="source-link" href="https://rustup.rs">rustup.rs</a>). Builds from source and installs to <code>~/.local/bin/</code>.</p>
   <p class="arch-note">Once published, pre-built binaries will be on <a class="source-link" href="https://github.com/Goncalo-Oliveira-Goncalves/rewired-agent/releases">GitHub Releases</a>.</p>
 
   <h3>Manual build</h3>
