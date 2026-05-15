@@ -1,8 +1,10 @@
 #!/bin/bash
 set -e
 
+#!/bin/bash
+set -e
+
 REPO_URL="https://github.com/Goncalo-Oliveira-Goncalves/rewired-agent"
-BRANCH="agent-swarm-comms"
 BIN_DIR="${REWIRED_BIN_DIR:-$HOME/.local/bin}"
 
 # Check for Rust
@@ -12,7 +14,10 @@ if ! command -v cargo &>/dev/null; then
   exit 1
 fi
 
-echo "Cloning rewired-agent..."
+# Detect branch: use current repo default (main) or override via REWIRED_BRANCH
+BRANCH="${REWIRED_BRANCH:-main}"
+
+echo "Cloning rewired-agent (branch: $BRANCH)..."
 TMP_DIR=$(mktemp -d)
 git clone --depth 1 --branch "$BRANCH" "$REPO_URL" "$TMP_DIR" 2>/dev/null
 
