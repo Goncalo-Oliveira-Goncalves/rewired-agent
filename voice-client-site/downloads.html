@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>rewired — Downloads</title>
+<meta name="description" content="Get Rewired running on your platform.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*:before,*:after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:'JetBrains Mono',monospace;
+  background:#080808;color:#a0a0a8;
+  -webkit-font-smoothing:antialiased
+}
+::selection{background:#ff003c;color:#fff}
+
+body:before{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(ellipse at 50% 0%,rgba(255,0,60,0.06),transparent 70%)
+}
+.scanlines{
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(255,0,60,0.008) 2px,rgba(255,0,60,0.008) 4px)
+}
+
+.wrap{position:relative;z-index:1;max-width:640px;margin:0 auto;padding:60px 24px 40px}
+
+nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:48px}
+nav a{color:rgba(255,255,255,0.3);text-decoration:none;font-size:14px;font-weight:500;transition:color 0.2s}
+nav a:hover{color:#ff003c}
+nav .back{display:flex;align-items:center;gap:6px}
+
+h1{font-size:clamp(20px,3vw,26px);font-weight:700;color:#fff;margin-bottom:8px}
+h1 span{color:#ff003c}
+.sub{color:rgba(255,255,255,0.3);font-size:13px;margin-bottom:40px}
+
+.quiz-card{
+  background:rgba(255,255,255,0.008);border:1px solid rgba(255,255,255,0.04);
+  border-radius:12px;padding:36px;min-height:280px
+}
+.quiz-card .q-label{
+  font-size:11px;font-weight:500;text-transform:uppercase;
+  letter-spacing:0.12em;color:rgba(255,255,255,0.25);margin-bottom:8px
+}
+.quiz-card .q-text{
+  font-size:17px;font-weight:600;color:#fff;margin-bottom:24px
+}
+.quiz-options{display:flex;flex-direction:column;gap:8px}
+.quiz-option{
+  display:flex;align-items:center;gap:14px;
+  padding:14px 18px;border:1px solid rgba(255,255,255,0.04);
+  border-radius:8px;cursor:pointer;transition:all 0.2s;
+  background:transparent;font-family:inherit;font-size:13px;
+  color:rgba(255,255,255,0.5);text-align:left;width:100%
+}
+.quiz-option:hover{border-color:rgba(255,0,60,0.2);background:rgba(255,0,60,0.02)}
+.quiz-option.selected{border-color:#ff003c;background:rgba(255,0,60,0.04)}
+.quiz-option .icon{font-size:16px;flex-shrink:0}
+.quiz-option .label{flex:1}
+.quiz-option .check{
+  width:16px;height:16px;border-radius:50%;
+  border:2px solid rgba(255,255,255,0.1);flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;transition:all 0.2s
+}
+.quiz-option.selected .check{border-color:#ff003c;background:#ff003c}
+.quiz-option.selected .check::after{
+  content:'';width:4px;height:8px;
+  border:solid #080808;border-width:0 2px 2px 0;
+  transform:rotate(45deg);margin-top:-1px
+}
+.quiz-back{
+  display:inline-flex;align-items:center;gap:4px;margin-bottom:20px;
+  cursor:pointer;border:none;background:none;color:rgba(255,255,255,0.3);
+  font-size:13px;font-family:inherit;transition:color 0.2s
+}
+.quiz-back:hover{color:#fff}
+.quiz-step-indicator{display:flex;gap:6px;justify-content:center;margin-bottom:24px}
+.quiz-step-indicator .dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,0.06);transition:all 0.3s}
+.quiz-step-indicator .dot.active{background:#ff003c}
+.quiz-step-indicator .dot.done{background:rgba(255,0,60,0.4)}
+
+.result-card{text-align:center}
+.result-card .check-big{
+  width:44px;height:44px;border-radius:50%;
+  background:rgba(255,0,60,0.08);color:#ff003c;
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;margin:0 auto 16px
+}
+.result-card h3{font-size:18px;font-weight:600;color:#fff;margin-bottom:6px}
+.result-card p{color:rgba(255,255,255,0.35);margin-bottom:20px;font-size:13px}
+.result-platform{
+  background:rgba(255,255,255,0.01);border:1px solid rgba(255,255,255,0.04);
+  border-radius:8px;padding:12px 16px;display:flex;align-items:center;
+  gap:10px;margin-bottom:20px;text-align:left
+}
+.result-platform .p-icon{font-size:20px}
+.result-platform .p-name{font-weight:600;color:#fff;font-size:13px}
+.result-platform .p-detail{font-size:11px;color:rgba(255,255,255,0.35)}
+.code-block{
+  background:rgba(255,255,255,0.01);border:1px solid rgba(255,255,255,0.04);
+  border-radius:8px;overflow:hidden;margin-bottom:14px
+}
+.code-block .code-header{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:8px 14px;border-bottom:1px solid rgba(255,255,255,0.04);
+  font-size:11px;color:rgba(255,255,255,0.3)
+}
+.code-block .code-header button{
+  background:none;border:none;color:rgba(255,255,255,0.3);
+  cursor:pointer;font-family:inherit;font-size:11px;transition:color 0.2s
+}
+.code-block .code-header button:hover{color:#fff}
+.code-block pre{
+  padding:14px;overflow-x:auto;
+  font-family:'JetBrains Mono',monospace;
+  font-size:12px;line-height:1.5;color:rgba(255,255,255,0.5);
+  text-align:left;white-space:pre-wrap;word-break:break-all
+}
+.result-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:14px}
+.result-actions a{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:10px 20px;border-radius:8px;font-size:12px;
+  font-weight:600;text-decoration:none;font-family:'JetBrains Mono',monospace;
+  transition:all 0.2s
+}
+.result-actions .btn-dl{background:#ff003c;color:#fff}
+.result-actions .btn-dl:hover{box-shadow:0 4px 16px rgba(255,0,60,0.3)}
+.result-actions .btn-gh{border:1px solid rgba(255,255,255,0.06);color:rgba(255,255,255,0.4)}
+.result-actions .btn-gh:hover{border-color:rgba(255,255,255,0.15)}
+.result-restart{
+  margin-top:14px;display:inline-block;color:rgba(255,255,255,0.3);
+  font-size:12px;cursor:pointer;border:none;background:none;
+  font-family:inherit;text-decoration:underline;text-underline-offset:3px
+}
+.result-restart:hover{color:#fff}
+
+@keyframes fadeInUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.fade-in{animation:fadeInUp 0.5s ease-out both}
+.fade-in-d1{animation:fadeInUp 0.5s ease-out 0.1s both}
+.fade-in-d2{animation:fadeInUp 0.5s ease-out 0.2s both}
+
+@media(max-width:500px){
+  .quiz-card{padding:24px}
+  .wrap{padding:40px 16px 30px}
+}
+</style>
+</head>
+<body>
+<div class="scanlines"></div>
+
+<div class="wrap">
+<nav>
+  <a href="/" class="back"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg> back</a>
+  <a href="https://github.com/Goncalo-Oliveira-Goncalves/rewired-agent" target="_blank">github</a>
+</nav>
+
+<div class="fade-in">
+  <h1><span>_</span>download</h1>
+  <div class="sub">tell us about your setup for tailored install instructions</div>
+</div>
+
+<div class="quiz-card fade-in-d1" id="quiz">
+  <div class="quiz-step-indicator" id="stepDots">
+    <span class="dot active"></span>
+    <span class="dot"></span>
+    <span class="dot"></span>
+  </div>
+
+  <div id="q1">
+    <div class="q-label">step 1 of 2</div>
+    <div class="q-text">where do you wanna run the ai?</div>
+    <div class="quiz-options">
+      <button class="quiz-option" data-next="q2-server">
+        <span class="icon">&#9729;</span>
+        <span class="label">my own server (vps / cloud)</span>
+        <span class="check"></span>
+      </button>
+      <button class="quiz-option" data-next="q2-local">
+        <span class="icon">&#9000;</span>
+        <span class="label">my local machine</span>
+        <span class="check"></span>
+      </button>
+      <button class="quiz-option" data-next="result-unsure">
+        <span class="icon">&#10067;</span>
+        <span class="label">not sure yet</span>
+        <span class="check"></span>
+      </button>
+    </div>
+  </div>
+
+  <div id="q2-server" style="display:none">
+    <button class="quiz-back" onclick="goToStep('q1', 0)">&larr; back</button>
+    <div class="q-label">step 2 of 2</div>
+    <div class="q-text">which platform is your server on?</div>
+    <div class="quiz-options">
+      <button class="quiz-option" data-next="result" data-platform="Linux (Ubuntu/Debian)" data-os="ubuntu"><span class="icon">&#x1F427;</span><span class="label">linux &mdash; ubuntu / debian</span><span class="check"></span></button>
+      <button class="quiz-option" data-next="result" data-platform="Linux (other)" data-os="linux"><span class="icon">&#x1F427;</span><span class="label">linux &mdash; other distro</span><span class="check"></span></button>
+      <button class="quiz-option" data-next="result" data-platform="macOS" data-os="macos"><span class="icon">&#x1F34E;</span><span class="label">macos</span><span class="check"></span></button>
+      <button class="quiz-option" data-next="result" data-platform="Windows Server" data-os="windows"><span class="icon">&#x1F5A5;</span><span class="label">windows server</span><span class="check"></span></button>
+      <button class="quiz-option" data-next="result" data-platform="Docker" data-os="docker"><span class="icon">&#x1F433;</span><span class="label">docker (any platform)</span><span class="check"></span></button>
+    </div>
+  </div>
+
+  <div id="q2-local" style="display:none">
+    <button class="quiz-back" onclick="goToStep('q1', 0)">&larr; back</button>
+    <div class="q-label">step 2 of 2</div>
+    <div class="q-text">which operating system are you on?</div>
+    <div class="quiz-options">
+      <button class="quiz-option" data-next="result" data-platform="Windows" data-os="windows"><span class="icon">&#x1F5A5;</span><span class="label">windows</span><span class="check"></span></button>
+      <button class="quiz-option" data-next="result" data-platform="macOS" data-os="macos"><span class="icon">&#x1F34E;</span><span class="label">macos</span><span class="check"></span></button>
+      <button class="quiz-option" data-next="result" data-platform="Linux" data-os="linux"><span class="icon">&#x1F427;</span><span class="label">linux</span><span class="check"></span></button>
+    </div>
+  </div>
+
+  <div id="result" style="display:none">
+    <div class="result-card">
+      <div class="check-big">&#10003;</div>
+      <h3>you're all set</h3>
+      <p>everything for <strong id="resultPlatformName" style="color:#fff;font-weight:600"></strong></p>
+      <div class="result-platform">
+        <span class="p-icon" id="resultIcon">&#x1F427;</span>
+        <div>
+          <div class="p-name" id="resultPlatformLabel"></div>
+          <div class="p-detail">rewired agent + voice client</div>
+        </div>
+      </div>
+      <div class="code-block" id="installCmdBlock">
+        <div class="code-header"><span>install rewired</span><button onclick="copyCode('installCmd')">copy</button></div>
+        <pre id="installCmd"></pre>
+      </div>
+      <div class="code-block" id="voiceCmdBlock">
+        <div class="code-header"><span>voice client setup</span><button onclick="copyCode('voiceCmd')">copy</button></div>
+        <pre id="voiceCmd"></pre>
+      </div>
+      <div class="result-actions">
+        <a href="https://github.com/Goncalo-Oliveira-Goncalves/rewired-agent/releases" target="_blank" class="btn-dl">download binary</a>
+        <a href="https://github.com/Goncalo-Oliveira-Goncalves/rewired-agent" target="_blank" class="btn-gh">view on github</a>
+      </div>
+      <button class="result-restart" onclick="resetQuiz()">start over &rarr;</button>
+    </div>
+  </div>
+
+  <div id="result-unsure" style="display:none">
+    <div class="result-card">
+      <div class="check-big" style="background:rgba(255,0,60,0.06);color:#ff003c;">&#10067;</div>
+      <h3>no problem</h3>
+      <p>rewired runs everywhere. here's a universal start:</p>
+      <div class="code-block">
+        <div class="code-header"><span>quick start (linux / macos)</span><button onclick="copyCode('unsureCmd')">copy</button></div>
+        <pre id="unsureCmd"># install python 3.10+ and pip, then:
+
+git clone https://github.com/Goncalo-Oliveira-Goncalves/rewired-agent.git
+cd rewired-agent
+pip install -e .
+rewired setup</pre>
+      </div>
+      <p style="font-size:12px;color:rgba(255,255,255,0.35);margin-bottom:16px">
+        prefer docker? see <a href="https://github.com/Goncalo-Oliveira-Goncalves/rewired-agent/blob/main/docker-compose.yml" target="_blank" style="color:#ff003c;text-decoration:none">docker-compose.yml</a>
+      </p>
+      <div class="result-actions">
+        <a href="https://github.com/Goncalo-Oliveira-Goncalves/rewired-agent" target="_blank" class="btn-dl">view on github</a>
+        <a href="https://github.com/Goncalo-Oliveira-Goncalves/rewired-agent#readme" target="_blank" class="btn-gh">read the docs</a>
+      </div>
+      <button class="result-restart" onclick="resetQuiz()">start over &rarr;</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+let state = { location: null, os: null };
+document.querySelectorAll('.quiz-option').forEach(btn => {
+  btn.addEventListener('click', function(){
+    const parent = this.closest('.quiz-options');
+    parent.querySelectorAll('.quiz-option').forEach(o => o.classList.remove('selected'));
+    this.classList.add('selected');
+    const next = this.dataset.next;
+    const platform = this.dataset.platform;
+    const os = this.dataset.os;
+    if(next === 'q2-server'){state.location='server';goToStep(next,1)}
+    else if(next === 'q2-local'){state.location='local';goToStep(next,1)}
+    else if(next === 'result'){state.os=os;showResult(platform,os)}
+    else if(next === 'result-unsure'){showUnsureResult()}
+  });
+});
+function goToStep(id,di){
+  document.querySelectorAll('#quiz > div[id]').forEach(d=>{if(d.id!=='stepDots')d.style.display='none'});
+  document.getElementById(id).style.display='block';updateDots(di);
+}
+function updateDots(i){
+  document.querySelectorAll('#stepDots .dot').forEach((d,j)=>{d.classList.toggle('active',j===i);d.classList.toggle('done',j<i)});
+}
+function showResult(platform,os){
+  document.querySelectorAll('#quiz > div[id]').forEach(d=>{if(d.id!=='stepDots')d.style.display='none'});
+  document.getElementById('result').style.display='block';updateDots(2);
+  const isServer=state.location==='server';
+  document.getElementById('resultPlatformName').textContent=platform+(isServer?' server':'');
+  const icons={ubuntu:'\u{1F427}',linux:'\u{1F427}',macos:'\u{1F34E}',windows:'\u{1F5A5}',docker:'\u{1F433}'};
+  document.getElementById('resultIcon').textContent=icons[os]||'\u{1F427}';
+  document.getElementById('resultPlatformLabel').textContent=platform+(isServer?' server':'');
+  let installCmd='',voiceCmd='';
+  if(os==='ubuntu'){installCmd='# ssh into your server, then:\ncurl -fsSL https://rewired-agent.vercel.app/install.sh | bash\nrewired setup';voiceCmd='# on your local machine:\nrewired-voice-client your-server-ip:43827'}
+  else if(os==='linux'){installCmd='# ensure python 3.10+ and pip:\ngit clone https://github.com/Goncalo-Oliveira-Goncalves/rewired-agent.git\ncd rewired-agent\npip install -e .\nrewired setup';voiceCmd='# on your local machine:\nrewired-voice-client your-server-ip:43827'}
+  else if(os==='macos'){installCmd="# install homebrew if needed:\n/bin/bash -c \"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\"\n\n# then:\ngit clone https://github.com/Goncalo-Oliveira-Goncalves/rewired-agent.git\ncd rewired-agent\npip install -e .\nrewired setup";voiceCmd='# voice client:\nrewired-voice-client localhost:43827'}
+  else if(os==='windows'){installCmd='# in powershell (as admin):\ngit clone https://github.com/Goncalo-Oliveira-Goncalves/rewired-agent.git\ncd rewired-agent\npip install -e .\nrewired setup';voiceCmd='# download voice client from releases, then:\nrewired-voice-client.exe your-server:43827'}
+  else if(os==='docker'){installCmd='# quick start:\ngit clone https://github.com/Goncalo-Oliveira-Goncalves/rewired-agent.git\ncd rewired-agent\ndocker compose up -d\n\n# configure:\ndocker exec -it rewired-agent-1 rewired setup';voiceCmd='# on your local machine:\nrewired-voice-client your-server-ip:43827'}
+  const vb=document.getElementById('voiceCmdBlock');
+  if(voiceCmd){vb.style.display='block';document.getElementById('voiceCmd').textContent=voiceCmd}
+  else vb.style.display='none';
+  document.getElementById('installCmd').textContent=installCmd;
+}
+function showUnsureResult(){
+  document.querySelectorAll('#quiz > div[id]').forEach(d=>{if(d.id!=='stepDots')d.style.display='none'});
+  document.getElementById('result-unsure').style.display='block';updateDots(2);
+}
+function resetQuiz(){
+  state={location:null,os:null};
+  document.querySelectorAll('.quiz-option').forEach(o=>o.classList.remove('selected'));
+  document.querySelectorAll('#quiz > div[id]').forEach(d=>{if(d.id!=='stepDots')d.style.display='none'});
+  document.getElementById('q1').style.display='block';updateDots(0);
+}
+function copyCode(id){
+  const el=document.getElementById(id);const text=el.textContent;
+  navigator.clipboard.writeText(text).then(()=>{const btn=el.closest('.code-block').querySelector('.code-header button');const orig=btn.innerHTML;btn.innerHTML='copied!';setTimeout(()=>btn.innerHTML=orig,2000)}).catch(()=>{const ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta)});
+}
+</script>
+</body>
+</html>
